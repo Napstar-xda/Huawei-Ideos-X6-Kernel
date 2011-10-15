@@ -3021,7 +3021,7 @@ vreg_codec_s4_fail:
 	return rc;
 }
 
-static struct marimba_codec_platform_data mariba_codec_pdata = {
+static struct marimba_codec_platform_data __refdata mariba_codec_pdata = {
 	.marimba_codec_power =  msm_marimba_codec_power,
 #ifdef CONFIG_MARIMBA_CODEC
 	.snddev_profile_init = msm_snddev_init,
@@ -3055,7 +3055,7 @@ static void __init msm7x30_init_marimba(void)
 	}
 }
 
-static struct marimba_codec_platform_data timpani_codec_pdata = {
+static struct marimba_codec_platform_data __refdata timpani_codec_pdata = {
 	.marimba_codec_power =  msm_marimba_codec_power,
 #ifdef CONFIG_TIMPANI_CODEC
 	.snddev_profile_init = msm_snddev_init_timpani,
@@ -9721,7 +9721,11 @@ MACHINE_START(MSM8X55_SURF, "QCT MSM8X55 SURF")
 	.timer = &msm_timer,
 MACHINE_END
 
+#ifdef CONFIG_FIH_PROJECT_FB0
+MACHINE_START(MSM8X55_FFA, "FB0")
+#else
 MACHINE_START(MSM8X55_FFA, "QCT MSM8X55 FFA")
+#endif
 #ifdef CONFIG_MSM_DEBUG_UART
 	.phys_io  = MSM_DEBUG_UART_PHYS,
 	.io_pg_offst = ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
