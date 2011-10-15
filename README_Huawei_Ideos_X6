@@ -1,0 +1,17 @@
+Configuration files can be found in arch/arm/configs.
+
+Huawei Ideos X6 => FB0_defconfig
+
+====================================================
+Instructions for configuring:
+ARCH=arm CROSS_COMPILE=/PATH/FOR/toolchain/arm-eabi-4.4.3/bin/arm-eabi- make FB0_defconfig
+
+
+Instructions for compiling:
+ARCH=arm CROSS_COMPILE=/PATH/FOR/toolchain/arm-eabi-4.4.3/bin/arm-eabi- make -j2
+
+Instructions for cleaning compilation output:
+make clean -j2
+
+
+
