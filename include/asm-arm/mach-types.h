@@ -2557,16 +2557,7 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_MSM8X55_SVLTE_SURF   2864
 #define MACH_TYPE_FSM9XXX_SURF         3028
 #define MACH_TYPE_FSM9XXX_FFA          3029
-#define MACH_TYPE_SEMC_ZEUS            1010001
-#define MACH_TYPE_SEMC_MOGAMI          1010001
-#define MACH_TYPE_SEMC_ANZU            1010001
-#define MACH_TYPE_SEMC_HALLON          1010001
-#define MACH_TYPE_SEMC_IYOKAN          1010001
-#define MACH_TYPE_SEMC_URUSHI          1010001
-#define MACH_TYPE_SEMC_SMULTRON        1010001
-#define MACH_TYPE_SEMC_MANGO           1010001
-#define MACH_TYPE_SEMC_AKANE           1010001
-#define MACH_TYPE_SEMC_AZUSA           1010001
+
 
 #ifdef CONFIG_ARCH_EBSA110
 # ifdef machine_arch_type
@@ -33108,125 +33099,6 @@ extern unsigned int __machine_arch_type;
 # define machine_is_fsm9xxx_ffa()	(0)
 #endif
 
-#ifdef CONFIG_MACH_SEMC_ZEUS
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_ZEUS
-# endif
-# define machine_is_semc_zeus()	(machine_arch_type == MACH_TYPE_SEMC_ZEUS)
-#else
-# define machine_is_semc_zeus()	(0)
-#endif
-
-#ifdef CONFIG_MACH_SEMC_MOGAMI
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_MOGAMI
-# endif
-# define machine_is_semc_mogami()	(machine_arch_type == MACH_TYPE_SEMC_MOGAMI)
-#else
-# define machine_is_semc_mogami()	(0)
-#endif
-
-#ifdef CONFIG_MACH_SEMC_ANZU
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_ANZU
-# endif
-# define machine_is_semc_anzu()	(machine_arch_type == MACH_TYPE_SEMC_ANZU)
-#else
-# define machine_is_semc_anzu()	(0)
-#endif
-
-#ifdef CONFIG_MACH_SEMC_HALLON
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_HALLON
-# endif
-# define machine_is_semc_hallon()	(machine_arch_type == MACH_TYPE_SEMC_HALLON)
-#else
-# define machine_is_semc_hallon()	(0)
-#endif
-
-#ifdef CONFIG_MACH_SEMC_IYOKAN
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_IYOKAN
-# endif
-# define machine_is_semc_iyokan()	(machine_arch_type == MACH_TYPE_SEMC_IYOKAN)
-#else
-# define machine_is_semc_iyokan()	(0)
-#endif
-
-#ifdef CONFIG_MACH_SEMC_URUSHI
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_URUSHI
-# endif
-# define machine_is_semc_urushi()	(machine_arch_type == MACH_TYPE_SEMC_URUSHI)
-#else
-# define machine_is_semc_urushi()	(0)
-#endif
-
-#ifdef CONFIG_MACH_SEMC_SMULTRON
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_SMULTRON
-# endif
-# define machine_is_semc_smultron()	(machine_arch_type == MACH_TYPE_SEMC_SMULTRON)
-#else
-# define machine_is_semc_smultron()	(0)
-#endif
-
-#ifdef CONFIG_MACH_SEMC_MANGO
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_MANGO
-# endif
-# define machine_is_semc_mango()	(machine_arch_type == MACH_TYPE_SEMC_MANGO)
-#else
-# define machine_is_semc_mango()	(0)
-#endif
-
-#ifdef CONFIG_MACH_SEMC_AKANE
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_AKANE
-# endif
-# define machine_is_semc_akane()	(machine_arch_type == MACH_TYPE_SEMC_AKANE)
-#else
-# define machine_is_semc_akane()	(0)
-#endif
-
-#ifdef CONFIG_MACH_SEMC_AZUSA
-# ifdef machine_arch_type
-#  undef machine_arch_type
-#  define machine_arch_type	__machine_arch_type
-# else
-#  define machine_arch_type	MACH_TYPE_SEMC_AZUSA
-# endif
-# define machine_is_semc_azusa()	(machine_arch_type == MACH_TYPE_SEMC_AZUSA)
-#else
-# define machine_is_semc_azusa()	(0)
-#endif
 
 /*
  * These have not yet been registered

@@ -39,7 +39,16 @@ static int coor_msg = 0;
 static int iosw = 0;
 
 // report delay
-static int rdelay = 10;
+static int rdelay = 5;
+
+//Fix for axis inversion - Napstar@XDA
+unsigned int prev_data1[4] = {0};
+unsigned int prev_data2[4] = {0};
+unsigned int prev_diff1[4] = {0};
+unsigned int prev_diff2[4] = {0};
+unsigned int prev_diff3[4] = {0};
+unsigned int tmp_diff[4] = {0};
+int chkX = 0, chkY = 0, countX = 0, countY = 0, flipX = 0, flipY = 0;
 
 //
 static int t_max_x, t_min_x, t_max_y, t_min_y;
@@ -796,6 +805,9 @@ static int read_btns_pr1(unsigned int * data)
 static int get_coordinate(unsigned int * data)
 {
 	unsigned int xy[4];//xy0, xy1, xy2, xy3;
+	unsigned int diff[4] = {0};
+	int tmp = 0;
+	int chkDiff = 50;
 #ifdef BU21018MWV_MT
 	int ret = 0;
 #endif
@@ -853,6 +865,193 @@ static int get_coordinate(unsigned int * data)
 	data[3] = 0;	//xy3;
 #endif
 
+			if (ret > 1)				//Napstar: Correct only if multiple touch found
+			{
+				if(prev_data1[0] != 0 && prev_data1[1] != 0 && prev_data1[2] != 0 && prev_data1[3] != 0 && prev_data2[0] != 0 && prev_data2[1] != 0 && prev_data2[2] != 0 && prev_data2[3] != 0)			//Napstar: Atleast previous two touch instance should be known.
+				{
+					diff[0] = prev_data1[0] - prev_data2[0];
+					diff[1] = prev_data1[1] - prev_data2[1];
+					diff[2] = prev_data1[2] - prev_data2[2];
+					diff[3] = prev_data1[3] - prev_data2[3];
+					//printk(KERN_INFO "%s: diffx1 = %d, diffy1 = %d  diffx2 = %d, diffy2 = %d\n", __func__, diff[0], diff[1], diff[2], diff[3]);
+				}
+
+				if(abs(data[0] - data[2]) < chkDiff)		//Napstar: Check movement behavior 3 instance before they fall in chkDiff region.
+				{
+					//printk(KERN_INFO "%s: Matrix Inversion area in X!\n", __func__);
+					if((((int)prev_diff3[0] > 0 && (int)prev_diff3[2] < 0) || ((int)prev_diff3[0] < 0 && (int)prev_diff3[2] > 0 )) && chkX != 1)		//Napstar: Was touch movements going opposite 3 instance before?
+					{
+						//printk(KERN_INFO "%s: Matrix Inversion detected in X1!\n", __func__);
+						chkX=1;
+						tmp_diff[0] = prev_diff3[0];
+						tmp_diff[2] = prev_diff3[2];
+					}
+					else if((((int)prev_diff2[0] > 0 && (int)prev_diff2[2] < 0) || ((int)prev_diff2[0] < 0 && (int)prev_diff2[2] > 0 )) && chkX != 1)	//Napstar: Was touch movements going opposite 2 instance before?
+					{
+						//printk(KERN_INFO "%s: Matrix Inversion detected in X2!\n", __func__);
+						chkX=1;
+						tmp_diff[0] = prev_diff2[0];
+						tmp_diff[2] = prev_diff2[2];
+					}
+					else if((((int)prev_diff1[0] > 0 && (int)prev_diff1[2] < 0) || ((int)prev_diff1[0] < 0 && (int)prev_diff1[2] > 0 )) && chkX != 1)	//Napstar: Was touch movements going opposite 1 instance before?
+					{
+						//printk(KERN_INFO "%s: Matrix Inversion detected in X3!\n", __func__);
+						chkX=1;
+						tmp_diff[0] = prev_diff1[0];
+						tmp_diff[2] = prev_diff1[2];
+					}
+					if(chkX > 0)							//Napstar: Correct axis inversion only if is found in next three multi-touch instance
+					{
+						//printk(KERN_INFO "%s: tmp_diffx1 = %d, tmp_diffy1 = %d  tmp_diffx2 = %d, tmp_diffy2 = %d\n", __func__, tmp_diff[0], tmp_diff[1], tmp_diff[2], tmp_diff[3]);
+						if(((int)tmp_diff[0] > 0 && (int)diff[0] < 0 && (int)tmp_diff[2] < 0 && (int)diff[2] > 0) || ((int)tmp_diff[0] < 0 && (int)diff[0] > 0 && (int)tmp_diff[2] > 0 && (int)diff[2] < 0))
+						{
+							if (coor_msg)
+								printk(KERN_INFO "%s: Matrix Inversion corrected in X!\n", __func__);
+							
+							if(flipX == 0)
+							 	flipX = 1;								//Napstar: Flag if axis inversion found.
+							else
+								flipX = 0;								//Napstar: Correct flag if consecutive axis inversion found in same session.
+						}
+					}
+				}
+				if(abs(data[1] - data[3]) < chkDiff)			//Napstar: Check for Y also.		
+				{
+					//printk(KERN_INFO "%s: Matrix Inversion area in Y!\n", __func__);
+					if((((int)prev_diff3[1] > 0 && (int)prev_diff3[3] < 0 ) || ((int)prev_diff3[1] < 0 && (int)prev_diff3[3] > 0 )) && chkY != 1)
+					{
+						chkY = 1;
+						//printk(KERN_INFO "%s: Matrix Inversion detected in Y1: %d!\n", __func__, chkY);
+						tmp_diff[1] = prev_diff3[1];
+						tmp_diff[3] = prev_diff3[3];
+					}
+					else if((((int)prev_diff2[1] > 0 && (int)prev_diff2[3] < 0 ) || ((int)prev_diff2[1] < 0 && (int)prev_diff2[3] > 0 )) && chkY != 1)
+					{
+						//printk(KERN_INFO "%s: Matrix Inversion detected in Y2!\n", __func__);
+						chkY = 1;
+						tmp_diff[1] = prev_diff2[1];
+						tmp_diff[3] = prev_diff2[3];							
+					}
+					else if((((int)prev_diff1[1] > 0 && (int)prev_diff1[3] < 0 ) || ((int)prev_diff1[1] < 0 && (int)prev_diff1[3] > 0)) && chkY != 1)
+					{
+						//printk(KERN_INFO "%s: Matrix Inversion detected in Y3!\n", __func__);
+						chkY = 1;
+						tmp_diff[1] = prev_diff1[1];
+						tmp_diff[3] = prev_diff1[3];							
+					}
+					if(chkY > 0)
+					{
+						//printk(KERN_INFO "%s: tmp_diffx1 = %d, tmp_diffy1 = %d  tmp_diffx2 = %d, tmp_diffy2 = %d\n", __func__, tmp_diff[0], tmp_diff[1], tmp_diff[2], tmp_diff[3]);
+						if(((int)tmp_diff[1] > 0 && (int)diff[1] < 0 && (int)tmp_diff[3] < 0 && (int)diff[3] > 0) || ((int)tmp_diff[1] < 0 && (int)diff[1] > 0 && (int)tmp_diff[3] > 0 && (int)diff[3] < 0))
+						{
+							if (coor_msg)
+								printk(KERN_INFO "%s: Matrix Inversion corrected in Y!\n", __func__);
+
+							if(flipY == 0)
+							 	flipY = 1;
+							else
+								flipY = 0;
+
+						}
+					}
+				}
+				
+				if( (abs(data[0] - data[2]) > chkDiff) && chkX != 0)		//Napstar: After coming out of chkDiff region check for axis inversion.
+				{
+					if(chkX > 0 && countX < 3)							//Napstar: Correct axis inversion only if is found in next three multi-touch instance
+					{
+						//printk(KERN_INFO "%s: tmp_diffx1 = %d, tmp_diffy1 = %d  tmp_diffx2 = %d, tmp_diffy2 = %d\n", __func__, tmp_diff[0], tmp_diff[1], tmp_diff[2], tmp_diff[3]);
+						if(((int)tmp_diff[0] > 0 && (int)diff[0] < 0 && (int)tmp_diff[2] < 0 && (int)diff[2] > 0) || ((int)tmp_diff[0] < 0 && (int)diff[0] > 0 && (int)tmp_diff[2] > 0 && (int)diff[2] < 0))
+						{
+							if (coor_msg)
+								printk(KERN_INFO "%s: Matrix Inversion corrected in X!\n", __func__);
+							
+							if(flipX == 0)
+							 	flipX = 1;								//Napstar: Flag if axis inversion found.
+							else
+								flipX = 0;								//Napstar: Correct flag if consecutive axis inversion found in same session.
+
+							chkX = 0;
+							tmp_diff[0] = 0;
+							tmp_diff[2] = 0;
+						}
+						countX++;
+					}
+					else
+					{
+						chkX = 0;
+						countX = 0;
+					}					
+				}
+				if( (abs(data[1] - data[3]) > chkDiff) && chkY != 0)				//Napstar: Same goes for Y
+				{					
+					if(chkY > 0 && countY < 3)
+					{
+						//printk(KERN_INFO "%s: tmp_diffx1 = %d, tmp_diffy1 = %d  tmp_diffx2 = %d, tmp_diffy2 = %d\n", __func__, tmp_diff[0], tmp_diff[1], tmp_diff[2], tmp_diff[3]);
+						if(((int)tmp_diff[1] > 0 && (int)diff[1] < 0 && (int)tmp_diff[3] < 0 && (int)diff[3] > 0) || ((int)tmp_diff[1] < 0 && (int)diff[1] > 0 && (int)tmp_diff[3] > 0 && (int)diff[3] < 0))
+						{
+							if (coor_msg)
+								printk(KERN_INFO "%s: Matrix Inversion corrected in Y!\n", __func__);
+
+							if(flipY == 0)
+							 	flipY = 1;
+							else
+								flipY = 0;
+
+							chkY = 0;
+							tmp_diff[1] = 0;
+							tmp_diff[3] = 0;
+						}
+						countY++;
+					}
+					else
+					{
+						chkY = 0;
+						countY = 0;
+					}
+				}
+				prev_data2[0] = prev_data1[0]; 					//Napstar: Backup earlier point's location and behavior.
+				prev_data2[1] = prev_data1[1]; 
+				prev_data2[2] = prev_data1[2]; 
+				prev_data2[3] = prev_data1[3];
+				prev_data1[0] = data[0];
+				prev_data1[1] = data[1];
+				prev_data1[2] = data[2];
+				prev_data1[3] = data[3];
+				prev_diff3[0] = prev_diff2[0];
+				prev_diff3[1] = prev_diff2[1];
+				prev_diff3[2] = prev_diff2[2];
+				prev_diff3[3] = prev_diff2[3];
+				prev_diff2[0] = prev_diff1[0];
+				prev_diff2[1] = prev_diff1[1];
+				prev_diff2[2] = prev_diff1[2];
+				prev_diff2[3] = prev_diff1[3];
+				prev_diff1[0] = diff[0];
+				prev_diff1[1] = diff[1];
+				prev_diff1[2] = diff[2];
+				prev_diff1[3] = diff[3];
+
+			}
+			else												//Napstar: Reset earlier sessions flags.
+			{
+				flipX = 0;
+				flipY = 0;
+			}
+
+			if(flipX == 1)										//Napstar: Correction for X axis inversion
+			{
+				tmp = data[0];
+				data[0] = data[2];
+				data[2] = tmp;
+			}
+
+			if(flipY == 1)										//Napstar: Correction for Y axis inversion
+			{
+				tmp = data[1];
+				data[1] = data[3];
+				data[3] = tmp;
+			}
+
 #ifdef BU21018MWV_MT
     return ret;
 #endif
@@ -881,7 +1080,7 @@ static void bu21018mwv_isr_workqueue(struct work_struct *work)
 #ifdef BU21018MWV_MT
 		if (data[0] != 0 && data[1] != 0)
 		{
-			input_report_abs(ts->touch_input, ABS_MT_TOUCH_MAJOR, 255);
+			input_report_abs(ts->touch_input, ABS_MT_TOUCH_MAJOR, 125);			//Napstar: Reduced pressure based recognition area (for testing purpose)
 			input_report_abs(ts->touch_input, ABS_MT_POSITION_X, data[0]);
 			input_report_abs(ts->touch_input, ABS_MT_POSITION_Y, data[1]);
 			input_mt_sync(ts->touch_input);
@@ -889,7 +1088,7 @@ static void bu21018mwv_isr_workqueue(struct work_struct *work)
 		
 		if (getTouch > 1)
 		{
-			input_report_abs(ts->touch_input, ABS_MT_TOUCH_MAJOR, 255);
+			input_report_abs(ts->touch_input, ABS_MT_TOUCH_MAJOR, 125);
 			input_report_abs(ts->touch_input, ABS_MT_POSITION_X, data[2]);
 			input_report_abs(ts->touch_input, ABS_MT_POSITION_Y, data[3]);
 			input_mt_sync(ts->touch_input);
